@@ -1,5 +1,6 @@
 import * as React from 'react'
-import {bound, ColorIDController, ColorIDControllerProps} from './ColorIDController'
+import {bound} from '../Framework'
+import {ColorIDController, ColorIDControllerProps} from './ColorIDController'
 
 // Notice the props here. They correspond exactly to our controller's props() method
 // this gives us a layer of indirection so we don't need to have a controller interface / fake / etc.
