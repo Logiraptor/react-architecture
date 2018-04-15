@@ -25,7 +25,7 @@ describe('ColorIDController', () => {
         }
         testContainer.bind(Symbols.COLOR_IDENTIFIER).toConstantValue(colorIdentifierSpy)
         const subject = testContainer.get(ColorIDController)
-        await subject.props().setColor('ff0000')
+        await subject.setColor('ff0000')
         expect(colorIdentifierSpy.identifyColor).to.have.been.calledWith('ff0000')
     })
 
@@ -39,7 +39,7 @@ describe('ColorIDController', () => {
         testContainer.rebind(Symbols.SET_STATE).toConstantValue(setStateSpy)
         testContainer.bind(Symbols.COLOR_IDENTIFIER).toConstantValue(colorIdentifierSpy)
         const subject = testContainer.get(ColorIDController)
-        await subject.props().setColor('ff0000')
+        await subject.setColor('ff0000')
         expect(setStateSpy).to.have.been.calledWith({loading: true, color: 'ff0000'})
         expect(setStateSpy).to.have.been.calledWith({loading: false, colorName: 'Color Name'})
     })

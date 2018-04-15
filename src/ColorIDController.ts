@@ -9,17 +9,10 @@ export interface ColorIDState {
     loading: boolean
 }
 
-export interface ColorIDControllerProps {
-    color: string
-    colorName: string
-    loading: boolean
-    setColor(value: string): void
-}
-
 // notice that this class is just a plain javascript class.
 // it can be constructed and inspected easily in tests.
 @injectable()
-export class ColorIDController extends BaseController<ColorIDControllerProps, ColorIDState> {
+export class ColorIDController extends BaseController<ColorIDState> {
     // the initial state for the component is owned by its controller
     // this keeps the data all in one place
     static initialState: ColorIDState = {
@@ -33,16 +26,19 @@ export class ColorIDController extends BaseController<ColorIDControllerProps, Co
         super()
     }
 
-    // adding this level of indirection for props() allows us to do any
-    // normal OOP code in the enclosing class, while retaining control of what
-    // gets exposed to the component
-    props() {
-        const {color, loading, colorName} = this.state
-        return {
-            setColor: (value: string) => this.fetchColorName(value),
-            color, loading, colorName,
-        }
+    get color() {
+        return this.state.color
     }
+
+    get colorName() {
+        return this.state.colorName
+    }
+
+    get loading() {
+        return this.state.loading
+    }
+
+    setColor = (value: string) => this.fetchColorName(value)
 
     private async fetchColorName(value: string) {
         await this.setState({loading: true, color: value})

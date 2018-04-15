@@ -1,13 +1,12 @@
+import {expect} from 'chai'
 import {mount} from 'enzyme'
 import * as React from 'react'
-import {ColorIDControllerProps} from '../src/ColorIDController'
-import {ColorIDView} from '../src/ColorIDView'
-import {expect} from 'chai'
-import sinon = require('sinon');
+import {ColorIDView, Props} from '../src/ColorIDView'
+import sinon = require('sinon')
 
 describe('ColorIDView', () => {
-    function render(props: Partial<ColorIDControllerProps>) {
-        const defaultProps: ColorIDControllerProps = {
+    function render(props: Partial<Props>) {
+        const defaultProps: Props = {
             color: 'ff0000',
             colorName: 'Red',
             loading: false,
@@ -28,7 +27,7 @@ describe('ColorIDView', () => {
         const subject = render({
             color: 'ff0000',
         })
-        expect(subject).to.containMatchingElement(<input value="ff0000" />)
+        expect(subject).to.containMatchingElement(<input value="ff0000"/>)
     })
 
     it('binds an input to setColor', () => {
@@ -37,7 +36,7 @@ describe('ColorIDView', () => {
             setColor: setColorSpy,
         })
         subject.find('input').simulate('change', {
-            target: {value: 'newColorValue'}
+            target: {value: 'newColorValue'},
         })
         expect(setColorSpy).to.have.been.calledWith('newColorValue')
     })
@@ -45,7 +44,7 @@ describe('ColorIDView', () => {
     it('hides the color name while loading', () => {
         const subject = render({
             loading: true,
-            colorName: 'Should not show'
+            colorName: 'Should not show',
         })
         expect(subject).to.contain.text('Loading...')
         expect(subject).not.to.contain.text('Should not show')

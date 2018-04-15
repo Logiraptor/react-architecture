@@ -7,22 +7,24 @@ import {Symbols} from './src/Symbols'
 // with state / setState, you write code with all the same caveats as
 // when in react. (dont mutate state, setState is asynchronous, etc)
 @injectable()
-export abstract class BaseController<Props, State> {
+export abstract class BaseController<State> {
     @inject(Symbols.SET_STATE)
     protected setState: (state: Partial<State>, callback?: () => void) => void
     @inject(Symbols.STATE)
     protected state: Readonly<State>
-
-    abstract props(): Props
 }
 
 interface ControllerClass<Props, State> {
     initialState: State
-    new(...args: any[]): BaseController<Props, State>
+    new(...args: any[]): BaseController<State>
 }
 
 // Higher order component which makes inversify compatible with react.
-export function bound<Props, State, T extends BaseController<Props, State>>(BoundComponent: React.ComponentClass<Props>, serviceIdentifier: ControllerClass<Props, State>) {
+export function bound<Props, State, T extends BaseController<State>>(
+    BoundComponent: React.ComponentClass<Props>,
+    serviceIdentifier: ControllerClass<Props, State>,
+    mapControllerToProps: (controller: T) => Props
+    ) {
     return class extends React.Component<{ container: Container }, State> {
         constructor(props: { container: Container }) {
             super(props)
@@ -38,8 +40,8 @@ export function bound<Props, State, T extends BaseController<Props, State>>(Boun
             localContainer.bind(Symbols.STATE).toDynamicValue(() => this.state)
 
             // auto wire a controller for the current render pass
-            let controller = localContainer.get(serviceIdentifier)
-            return React.createElement(BoundComponent, controller.props())
+            let controller = localContainer.get<T>(serviceIdentifier)
+            return React.createElement(BoundComponent, mapControllerToProps(controller))
         }
     }
 }

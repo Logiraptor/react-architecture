@@ -1,11 +1,16 @@
 import * as React from 'react'
 import {bound} from '../Framework'
-import {ColorIDController, ColorIDControllerProps} from './ColorIDController'
+import {ColorIDController} from './ColorIDController'
 
-// Notice the props here. They correspond exactly to our controller's props() method
-// this gives us a layer of indirection so we don't need to have a controller interface / fake / etc.
+export interface Props {
+    color: string
+    colorName: string
+    loading: boolean
+    setColor(value: string): void
+}
+
 // This component is a simple 'Presentational' component and easily testable.
-export class ColorIDView extends React.Component<ColorIDControllerProps> {
+export class ColorIDView extends React.Component<Props> {
     handleColorChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         this.props.setColor(event.target.value)
     }
@@ -24,4 +29,12 @@ export class ColorIDView extends React.Component<ColorIDControllerProps> {
     }
 }
 
-export const BoundColorIDView = bound(ColorIDView, ColorIDController)
+// Here we bind the controller to the react component.
+// This is essentially the react-redux `connect` HOC.
+// The function here maps controller properties to react props.
+export const BoundColorIDView = bound(ColorIDView, ColorIDController, (x: ColorIDController) => ({
+    colorName: x.colorName,
+    color: x.color,
+    loading: x.loading,
+    setColor: x.setColor
+}))

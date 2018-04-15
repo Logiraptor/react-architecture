@@ -1,0 +1,8 @@
+1. ✔ Eliminate props() interface.
+Instead use a mapping function in the HOC. This is more familiar since redux / apollo / mobx all do it that way.
+This requires exposing the necessary interface at the root controller level, which is also more natural.
+
+2. Eliminate property injected state / setState.
+I should not *need* to use a container to construct the controller. It feels unnatural and confusing.
+Instead allow controllers to maintain their own state and somehow notify the HOC that
+changes need to be propagated.
