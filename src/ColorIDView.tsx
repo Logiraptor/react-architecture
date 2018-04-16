@@ -1,4 +1,5 @@
 import * as React from 'react'
+import {Observable} from 'rxjs/Observable'
 import {bound} from '../Framework'
 import {ColorIDController} from './ColorIDController'
 
@@ -31,10 +32,12 @@ export class ColorIDView extends React.Component<Props> {
 
 // Here we bind the controller to the react component.
 // This is essentially the react-redux `connect` HOC.
-// The function here maps controller properties to react props.
-export const BoundColorIDView = bound(ColorIDView, ColorIDController, (x: ColorIDController) => ({
-    colorName: x.colorName,
-    color: x.color,
-    loading: x.loading,
-    setColor: x.setColor
-}))
+// The function here maps controller properties to react props using rxjs.
+export const BoundColorIDView = bound(ColorIDView, ColorIDController, controller => {
+    return Observable.combineLatest(controller.color, controller.colorName, controller.loading,
+        (color, colorName, loading) => {
+            return {
+                color, colorName, loading, setColor: controller.setColor
+            }
+        })
+})

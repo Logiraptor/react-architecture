@@ -11,3 +11,6 @@ import * as sinonChai from 'sinon-chai'
 
 chai.use(chaiEnzyme())
 chai.use(sinonChai)
+
+;(window as any).Object = Object
+;(window as any).Math = Math

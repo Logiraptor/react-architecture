@@ -1,47 +1,52 @@
-import {Container, inject, injectable} from 'inversify'
+import {Container, interfaces} from 'inversify'
 import * as React from 'react'
-import {Symbols} from './src/Symbols'
+import {Observable} from 'rxjs/Observable'
+import {AnonymousSubscription} from 'rxjs/Subscription'
+import Newable = interfaces.Newable
 
-// The base controller which establishes some conventions to
-// *hopefully* make this architecture familiar to react developers.
-// with state / setState, you write code with all the same caveats as
-// when in react. (dont mutate state, setState is asynchronous, etc)
-@injectable()
-export abstract class BaseController<State> {
-    @inject(Symbols.SET_STATE)
-    protected setState: (state: Partial<State>, callback?: () => void) => void
-    @inject(Symbols.STATE)
-    protected state: Readonly<State>
+interface BoundState<State, Controller> {
+    subscription?: AnonymousSubscription
+    wrappedComponentProps?: State
+    controller: Controller
 }
 
-interface ControllerClass<Props, State> {
-    initialState: State
-    new(...args: any[]): BaseController<State>
-}
-
-// Higher order component which makes inversify compatible with react.
-export function bound<Props, State, T extends BaseController<State>>(
+// Higher order component which makes inversify / rxjs compatible with react.
+export function bound<Props, Controller> (
     BoundComponent: React.ComponentClass<Props>,
-    serviceIdentifier: ControllerClass<Props, State>,
-    mapControllerToProps: (controller: T) => Props
-    ) {
-    return class extends React.Component<{ container: Container }, State> {
-        constructor(props: { container: Container }) {
-            super(props)
+    serviceIdentifier: Newable<Controller>,
+    mapStateToObservable: (state: Controller) => Observable<Props>,
+) {
+    return class bound extends React.Component<{ container: Container }, BoundState<Props, Controller>> {
+        state: BoundState<Props, Controller> = {
+            controller: this.props.container.get(serviceIdentifier),
+        }
 
-            this.state = serviceIdentifier.initialState
+        componentDidMount() {
+            this.setState({
+                subscription: mapStateToObservable(this.state.controller).subscribe({
+                    next: (value) => {
+                        this.onObservedStateChange(value)
+                    }
+                })
+            })
+        }
+
+        componentWillUnmount() {
+            if (!this.state.subscription) return
+            this.state.subscription.unsubscribe()
+        }
+
+        onObservedStateChange(value?: Props): void {
+            this.setState({
+                wrappedComponentProps: value
+            })
         }
 
         render() {
-            // locally bind state / setState so they can be property-injected in BaseController
-            const localContainer = new Container()
-            localContainer.parent = this.props.container
-            localContainer.bind(Symbols.SET_STATE).toConstantValue(this.setState.bind(this))
-            localContainer.bind(Symbols.STATE).toDynamicValue(() => this.state)
-
-            // auto wire a controller for the current render pass
-            let controller = localContainer.get<T>(serviceIdentifier)
-            return React.createElement(BoundComponent, mapControllerToProps(controller))
+            if (!this.state.wrappedComponentProps) {
+                return null
+            }
+            return React.createElement(BoundComponent, this.state.wrappedComponentProps)
         }
     }
 }
