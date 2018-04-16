@@ -33,11 +33,11 @@ export class ColorIDView extends React.Component<Props> {
 // Here we bind the controller to the react component.
 // This is essentially the react-redux `connect` HOC.
 // The function here maps controller properties to react props using rxjs.
-export const BoundColorIDView = bound(ColorIDView, ColorIDController, controller => {
+export const BoundColorIDView = bound(ColorIDController, controller => {
     return Observable.combineLatest(controller.color, controller.colorName, controller.loading,
         (color, colorName, loading) => {
             return {
                 color, colorName, loading, setColor: controller.setColor
             }
         })
-})
+})(ColorIDView)
